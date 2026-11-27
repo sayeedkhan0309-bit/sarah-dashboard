@@ -1,0 +1,34 @@
+name: Refresh GFS Dashboard - One Screener Test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+      - name: Run one Chartink screener
+        run: python gfs_dashboard.py
+      - name: Upload latest dashboard files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gfs-dashboard-latest
+          path: |
+            gfs_dashboard_latest.xlsx
+            gfs_dashboard_latest.json
+          if-no-files-found: warn
+          retention-days: 7
